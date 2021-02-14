@@ -99,45 +99,45 @@ Start
     LDR R0, = GPIO_PORTM_DATA_R
 	 
 State0
-         LDR R1,[R0]		
+                 LDR R1,[R0]		
 		 AND R7,R1,#2_00010000;masking off bits
-		 CMP R7,#2_00010000
+		 CMP R7,#2_00010000 ;here R7 plays the role as reading button input, checking if loading binary input or not loading binary input
 		 ANDEQ R2,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 		 ANDNE R2,R1,#2_00000000 ;if not equal, mask all bits of input equal, mask all bits of input
-		 ORR R10,R10,R2
+		 ORR R10,R10,R2   ;use R10 to store value of sequential input
 		 CMP R2,#2_00000000
 		 BEQ State1
-         BNE State0
+                 BNE State0
 State1  
-         LSL R10,R10,#0x1
-         AND R7,R1,#2_00010000 ;masking off bits		 
-		 CMP R7,#2_00010000
-         IT EQ
-         ANDEQ R6,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+                 LSL R10,R10,#0x1 ;left shift one space for the new input bits
+                 AND R7,R1,#2_00010000 ;masking off bits, since only using GPIO port M 4th bit for load status button input		 
+		 CMP R7,#2_00010000 
+                 IT EQ
+                 ANDEQ R6,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 		 ANDNE R6,R1,#2_00000000
 		 ORR R10,R10,R6
 		 CMP R6,#2_00000001
 		 IT EQ 
 		 BEQ State2
-	     BNE State1
+	         BNE State1
 
 State2  
-         LSL R10,R10,#0x1		
+                 LSL R10,R10,#0x1		
 		 AND R7,R1,#2_00010000 ;masking off bits
 		 CMP R7,#2_00010000
-         IT EQ
+                 IT EQ
 		 ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-         ANDNE R8,R1,#2_00000000
+                 ANDNE R8,R1,#2_00000000
 		 ORR R10,R10,R8
 		 CMP R8,#2_00000001
 		 IT EQ
 		 BEQ State3
-	     BNE State1
+	         BNE State1
 State3  
-         LSL R10,R10,#1		
+                 LSL R10,R10,#1		
 		 AND R7,R1,#2_00010000 ;masking off bits
 		 CMP R7,#2_00010000
-         IT EQ 
+                 IT EQ 
 		 ANDEQ R9,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 		 ANDEQ R9,R1,#2_00000000
 		 ORR R10,R10,R9
