@@ -101,10 +101,10 @@ Start
 State0
          LDR R1,[R0]		
 		 AND R7,R1,#2_00010000;masking off bits
-		 AND R2,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 		 CMP R7,#2_00010000
-		 ORREQ R10,R2,R2
-		 BNE State0 ;if not equal, mask all bits of input
+		 ANDEQ R2,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+		 ANDNE R2,R1,#2_00000000 ;if not equal, mask all bits of input equal, mask all bits of input
+		 ORR R10,R10,R2
 		 CMP R2,#2_00000000
 		 BEQ State1
          BNE State0
@@ -114,8 +114,8 @@ State1
 		 CMP R7,#2_00010000
          IT EQ
          ANDEQ R6,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-		 ORREQ R10,R10,R6	 
-		 BNE State1 ;if not equal
+		 ANDNE R6,R1,#2_00000000
+		 ORR R10,R10,R6
 		 CMP R6,#2_00000001
 		 IT EQ 
 		 BEQ State2
@@ -127,8 +127,8 @@ State2
 		 CMP R7,#2_00010000
          IT EQ
 		 ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-         ORREQ R10,R10,R8
-		 BNE State2 ;if not equal, means we are not loading values to R10. keep in this loop
+         ANDNE R8,R1,#2_00000000
+		 ORR R10,R10,R8
 		 CMP R8,#2_00000001
 		 IT EQ
 		 BEQ State3
@@ -139,8 +139,8 @@ State3
 		 CMP R7,#2_00010000
          IT EQ 
 		 ANDEQ R9,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-		 ORREQ R10,R10,R9
-		 BNE State2 ;if not equal
+		 ANDEQ R9,R1,#2_00000000
+		 ORR R10,R10,R9
 		 CMP R9,#2_00000001	
 		 IT EQ
 		 BEQ State4
