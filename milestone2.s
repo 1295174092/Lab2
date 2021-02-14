@@ -97,48 +97,66 @@ Start
 	BL  State_Init
 	LDR R3, =COMBINATION         ;R3 stores our combination
     LDR R0, = GPIO_PORTM_DATA_R
-Loop
-         MOV R10, #0x0 ;a flag indicate which step we are in the overall sequential input of binary code
-         MOV R9,#0x0 ;the register that store the seqential input		 
-StatusCheck
+	 
+State0
          LDR R1,[R0]		
+		 AND R7,R1,#2_00010000;masking off bits
+		 AND R2,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+		 CMP R7,#2_00010000
+		 ORREQ R10,R2,R2
+		 BNE State0 ;if not equal, mask all bits of input
+		 CMP R2,#2_00000000
+		 BEQ State1
+         BNE State0
+State1  
+         LSL R10,R10,#0x1
+         AND R7,R1,#2_00010000 ;masking off bits		 
+		 CMP R7,#2_00010000
+         IT EQ
+         ANDEQ R6,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+		 ORREQ R10,R10,R6	 
+		 BNE State1 ;if not equal
+		 CMP R6,#2_00000001
+		 IT EQ 
+		 BEQ State2
+	     BNE State1
+
+State2  
+         LSL R10,R10,#0x1		
+		 AND R7,R1,#2_00010000 ;masking off bits
+		 CMP R7,#2_00010000
+         IT EQ
+		 ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+         ORREQ R10,R10,R8
+		 BNE State2 ;if not equal, means we are not loading values to R10. keep in this loop
+		 CMP R8,#2_00000001
+		 IT EQ
+		 BEQ State3
+	     BNE State1
+State3  
+         LSL R10,R10,#1		
 		 AND R7,R1,#2_00010000 ;masking off bits
 		 CMP R7,#2_00010000
          IT EQ 
-		 BEQ InputShift
-         BNE StatusCheck
-InputShift
-         
-         AND R2,R1,#2_00000001 ;we use mask to only take last bit which is the input of sequential binary code
-         ORR R9,R2 ;copy the value of R2 first bit to R9	 
-		 LSL R9,R9,#0x1 ; we do logic shift left on R9's value
-		 ADD R10,#0x1
-         CMP R10,#0x4
-         IT EQ		 
-		 BEQ CheckSameValue	
-	     BNE StatusCheck
+		 ANDEQ R9,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+		 ORREQ R10,R10,R9
+		 BNE State2 ;if not equal
+		 CMP R9,#2_00000001	
+		 IT EQ
+		 BEQ State4
+	     BNE State0
 
-CheckSameValue
-         LSR R9,R9,#0x1 ;we need to move back 1 space since the first bit in the InputShift loop has been move left to 5th location
-		 AND R9,R9,#2_00001111 ;remove interference by using the bit mask
-		 CMP R9,R3
-
+	
+State4
+	     CMP R10,R3
+		 IT EQ
 		 BEQ Unlocked_State
-		 BNE Locked_State
- 
-	
- 
-Locked_State                    
-	LDR R5,=GPIO_PORTN_DATA_R
-	MOV R4,#2_00000001
-	STR R4,[R5]
-	B Loop
-	
+		 
 Unlocked_State
 	LDR R5, =GPIO_PORTN_DATA_R
 	MOV R4,#2_00000010
 	STR R4, [R5]
-	B Loop
+	B State0
 	
 	ALIGN   
     END  
