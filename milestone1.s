@@ -27,8 +27,8 @@ GPIO_PORTM_DIR_R             EQU 0x40063400  ;GPIO Port M Direction Register Add
 GPIO_PORTM_DEN_R             EQU 0x4006351C  ;GPIO Port M Direction Register Address (Fill in these addresses)
 GPIO_PORTM_DATA_R            EQU 0x400633FC  ;GPIO Port M Data Register Address      (Fill in these addresses) 
 
-COMBINATION EQU 2_111
-LOADING EQU 2_00001000
+COMBINATION EQU 2_111 ;an assigned combination to unlock the state
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;Do not alter this section
@@ -98,16 +98,16 @@ Start
 	BL  State_Init
 	LDR R0, = GPIO_PORTM_DATA_R  ; Inputs set pointer to the input 
 	LDR R3, =COMBINATION         ;R3 stores our combination
-	LDR R7, =LOADING
+	
 	
 Loop
 			LDR R1,[R0]            
 			AND R6,R1,#2_00001000
-			CMP R6,R7
-			IT EQ
-			ANDEQ R2,R1,#2_00000111
-			ANDNE R2,R1,#2_00000000
-			CMP R2,R3
+			CMP R6,#2_00001000 ;checking if the input of load line is active or not
+			IT EQ ;give condition of equal
+			ANDEQ R2,R1,#2_00000111 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+			ANDNE R2,R1,#2_00000000 ;if not equal, mask all bits of input
+			CMP R2,R3 ;compare with the assigned value
 			IT EQ
 			BEQ Unlocked_State
 			BNE Locked_State
