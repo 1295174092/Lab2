@@ -88,7 +88,7 @@ PortM_Init
 
 State_Init 
 
-            LDR R5,=GPIO_PORTN_DATA_R  ;Locked is the Initial State
+                LDR R5,=GPIO_PORTN_DATA_R  ;Locked is the Initial State
 	        MOV R4,#2_00000001
 	        STR R4,[R5]
 	        BX LR 
@@ -97,14 +97,14 @@ Start
 	        BL  PortN_Init                
 	        BL  PortM_Init
 	        BL  State_Init
-            LDR R0, = GPIO_PORTM_DATA_R
+                LDR R0, = GPIO_PORTM_DATA_R
 
 Loop
 	        MOV R10,#0      ;R10 stores the state number
 	        LDR R1,[R0]
 			
 State0
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -117,7 +117,7 @@ State0
 			B StateCheckExit
 
 State1
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -132,7 +132,7 @@ State1
 			B StateCheckExit
 
 State2
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -146,7 +146,7 @@ State2
 			B StateCheckExit
 
 State3      
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -160,7 +160,7 @@ State3
 			B StateCheckExit
 
 State4      
-            AND R7,R1,#2_00010000 
+                        AND R7,R1,#2_00010000 
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -176,7 +176,7 @@ StateCheckExit
 			CMP R10, #4
 			MOVEQ R6, #1 ;here R6 indicate the state of overall input. 1 is unlocked and 0 is locked
 			MOVNE R6, #0
-	        CMP R6,#1
+	                CMP R6,#1
 			BEQ Unlocked_State
 			BNE Locked_State
 
