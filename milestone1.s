@@ -27,6 +27,8 @@ GPIO_PORTM_DIR_R             EQU 0x40063400  ;GPIO Port M Direction Register Add
 GPIO_PORTM_DEN_R             EQU 0x4006351C  ;GPIO Port M Direction Register Address (Fill in these addresses)
 GPIO_PORTM_DATA_R            EQU 0x400633FC  ;GPIO Port M Data Register Address      (Fill in these addresses) 
 
+COMBINATION EQU 2_111 ;an assigned combination to unlock the state
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;Do not alter this section
@@ -73,119 +75,56 @@ PortM_Init
     ;STEP 5
     LDR R1, =GPIO_PORTM_DIR_R   
     LDR R0, [R1] 
-    ORR R0,R0, #0x0         
+    ORR R0,R0, #0x0          
 	STR R0, [R1]   
     
 	;STEP 7
     LDR R1, =GPIO_PORTM_DEN_R   
     LDR R0, [R1] 
-    ORR R0, R0, #0x11          
+    ORR R0, R0, #0xF          
 	                          
     STR R0, [R1]    
 	BX  LR                     
 
 
-State_Init 
+State_Init LDR R5,=GPIO_PORTN_DATA_R  ;Locked is the Initial State
+	       MOV R4,#2_00000001
+	       STR R4,[R5]
+	       BX LR 
 
-            LDR R5,=GPIO_PORTN_DATA_R  ;Locked is the Initial State
-	        MOV R4,#2_00000001
-	        STR R4,[R5]
-	        BX LR 
-            
 Start                             
-	        BL  PortN_Init                
-	        BL  PortM_Init
-	        BL  State_Init
-            LDR R0, = GPIO_PORTM_DATA_R
-
+	BL  PortN_Init                
+	BL  PortM_Init
+	BL  State_Init
+	LDR R0, = GPIO_PORTM_DATA_R  ; Inputs set pointer to the input 
+	LDR R3, =COMBINATION         ;R3 stores our combination
+	
+	
 Loop
-	        MOV R10,#0      ;R10 stores the state number
-	        LDR R1,[R0]
-State0
-			AND R7,R1,#2_00010000
-			CMP R7,#2_00010000
-			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
-			CMP R10, #0 		; to check if state == 0
-			BNE State1 		; go to State1 if state != 0
-
-			CMP R8, #0 		; to check if input == 0
-			MOVEQ R10, #1 	; if input == 0, state = 1
-			MOVNE R10, #0	; if input != 0, state = 0
-			B StateCheckExit
-
-State1
-            
-
-			
-			CMP R10, #1 	; to check if state == 1
-			BNE State2 	; go to State2 if state != 1
-
-			CMP R8, #0 		; to check if input == 0
-			MOVEQ R10, #1 	; if input == 0, state = 1
-			MOVNE R10, #2	; if input != 0, state = 2
-			B StateCheckExit
-
-State2
-                        AND R7,R1,#2_00010000
-			CMP R7,#2_00010000
-			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
-			
-			CMP R10, #2 	; to check if state == 2
-			BNE State3 	; go to State3 if state != 2
-
-			CMP R8, #0 		; to check if input == 0
-			MOVEQ R10, #1 	; if input == 0, state = 1
-			MOVNE R10, #3	; if input != 0, state = 3
-			B StateCheckExit
-
-State3      
-                        AND R7,R1,#2_00010000
-			CMP R7,#2_00010000
-			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
-			
-			CMP R10, #3 	; to check if state == 3
-			BNE State4 	; go to State4 if state != 3
-
-			CMP R8, #0 		; to check if input == 0
-			MOVEQ R10, #1 	; if input == 0, state = 1
-			MOVNE R10, #4	; if input != 0, state = 4
-			B StateCheckExit
-
-State4      
-                        AND R7,R1,#2_00010000
-			CMP R7,#2_00010000
-			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
-			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
-			
-			CMP R8, #0 		; to check if input == 0
-			MOVEQ R10, #1 	; if input == 0, state = 1
-			MOVNE R10, #0	; if input != 0, state = 0
-			B StateCheckExit
-
-StateCheckExit
-
-			; determine lock status (stored in R10) based on current state
-			CMP R10, #4
-			MOVEQ R6, #1 ;here R6 indicate the state of overall input. 1 is unlocked and 0 is locked
-			MOVNE R6, #0
-	                CMP R6,#1
+			LDR R1,[R0]            
+			AND R6,R1,#2_00001000
+			CMP R6,#2_00001000 ;checking if the input of load line is active or not
+			IT EQ ;give condition of equal
+			ANDEQ R2,R1,#2_00000111 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
+			ANDNE R2,R1,#2_00000000 ;if not equal, mask all bits of input
+			CMP R2,R3 ;compare with the assigned value
+			IT EQ
 			BEQ Unlocked_State
 			BNE Locked_State
-
+ 
+	
+ 
 Locked_State                    
-	        LDR R5,=GPIO_PORTN_DATA_R
-	        MOV R4,#2_00000001
-	        STR R4,[R5]
-	        B Loop
+	LDR R5,=GPIO_PORTN_DATA_R
+	MOV R4,#2_00000001
+	STR R4,[R5]
+	B Loop
 	
 Unlocked_State
-	        LDR R5, =GPIO_PORTN_DATA_R
-	        MOV R4,#2_00000010
-	        STR R4, [R5]
-	        B Loop
-			
-         ALIGN   
+	LDR R5, =GPIO_PORTN_DATA_R
+	MOV R4,#2_00000010
+	STR R4, [R5]
+	B Loop
+	
+	ALIGN   
     END  
