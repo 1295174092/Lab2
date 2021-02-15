@@ -127,7 +127,7 @@ State1
 			B StateCheckExit
 
 State2
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -141,7 +141,7 @@ State2
 			B StateCheckExit
 
 State3      
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
@@ -155,7 +155,7 @@ State3
 			B StateCheckExit
 
 State4      
-            AND R7,R1,#2_00010000
+                        AND R7,R1,#2_00010000
 			CMP R7,#2_00010000
 			ANDEQ R8,R1,#2_00000001 ;if equal, means button is pushed and binary input are taken by the Micro controller, use mask to remove the interference of unwanted bit
 			ANDNE R8,R1,#2_00000000 ;if not equal, mask all bits of input
